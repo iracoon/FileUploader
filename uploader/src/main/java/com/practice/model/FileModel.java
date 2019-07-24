@@ -1,6 +1,5 @@
 package com.practice.model;
 
-import java.util.Objects;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -22,6 +21,8 @@ public class FileModel
     private String content;
     
     @Transient
+    private MultipartFile[] files;
+    @Transient
     private MultipartFile file;
 
 
@@ -33,6 +34,10 @@ public class FileModel
         this.city = city;
         this.content = content;
     }
+    
+    public MultipartFile[] getFiles() {return files;}
+
+	public void setFiles(MultipartFile[] files) {this.files = files;}
     
     public MultipartFile getFile() {return file;}
 
@@ -49,42 +54,4 @@ public class FileModel
     public String getContent() {return content;}
 
     public void setContent(String content) {this.content = content;}
-
-    @Override
-    public int hashCode() 
-    {
-        int hash = 7;
-        hash = 79 * hash + Objects.hashCode(this.id);
-        hash = 79 * hash + Objects.hashCode(this.city);
-        hash = 79 * hash + Objects.hashCode(this.content);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) 
-    {
-        if (this == obj) 
-            return true;
-        if (obj == null) 
-            return false;
-        if (getClass() != obj.getClass()) 
-            return false;
-        final FileModel other = (FileModel) obj;
-        if (!Objects.equals(this.city, other.city)) 
-            return false;
-        if (!Objects.equals(this.content, other.content)) 
-            return false;
-        return Objects.equals(this.id, other.id);
-    }
-
-    @Override
-    public String toString() 
-    {
-        final StringBuilder sb = new StringBuilder("File_Model{");
-        sb.append("id=").append(id);
-        sb.append(", city='").append(city).append('\'');
-        sb.append(", content='").append(content).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
 }
