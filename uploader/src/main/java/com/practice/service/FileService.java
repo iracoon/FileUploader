@@ -1,11 +1,14 @@
 package com.practice.service;
 
+import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.text.PDFTextStripperByArea;
@@ -76,14 +79,16 @@ public class FileService implements IFileService
 		FileModel tmp = new FileModel();
 		try
 		{
-			InputStream inputStream = file.getInputStream();
+			InputStream inputStream = file.getInputStream();	
 			String content = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-		     if(content.length() > 0)
-		     {
-		    	 tmp.setContent(content);
-		    	 tmp.setCity(city);
-		    	 repository.save(tmp);
-		     }
+			content = StringEscapeUtils.escapeJava(content);
+			
+		    if(content.length() > 0)
+		    {
+		    	tmp.setContent(content);
+		    	tmp.setCity(city);
+		    	repository.save(tmp);
+		    }
 		     return true;
 		}
 		catch(Exception e) {return false;}
