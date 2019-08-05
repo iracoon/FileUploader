@@ -1,22 +1,25 @@
 package com.practice.service;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
+import org.springframework.util.StringUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.text.PDFTextStripperByArea;
+import org.mozilla.universalchardet.UniversalDetector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.exception.MyFileNotFoundException;
 import com.practice.model.FileModel;
 import com.practice.repository.FileRepository;
 
@@ -40,6 +43,7 @@ public class FileService implements IFileService
 	{
 		boolean isFlag = false;
 		String extension = FilenameUtils.getExtension(file.getOriginalFilename());
+		
 		if(extension.equalsIgnoreCase("txt"))
 			isFlag = readDataFromTxt(file, city);
 		else if(extension.equalsIgnoreCase("pdf"))
@@ -65,7 +69,10 @@ public class FileService implements IFileService
 	   		    if(content.length() > 0)
 	   		    {
 			    	 tmp.setContent(content);
-			    	 tmp.setCity(city);;
+			    	 tmp.setCity(city);
+			    	 tmp.setfileName(file.getOriginalFilename());
+			    	 tmp.setfileType(file.getContentType());
+			    	 tmp.setData(file.getBytes());
 			    	 repository.save(tmp);
 	   		    }
             }
@@ -73,24 +80,61 @@ public class FileService implements IFileService
 		}
 		catch(Exception e) {return false;}
 	}
+	
+	public static File convert(MultipartFile file) throws IOException {
+	    File convFile = new File(file.getOriginalFilename());
+	    convFile.createNewFile();
+	    FileOutputStream fos = new FileOutputStream(convFile);
+	    fos.write(file.getBytes());
+	    fos.close();
+	    return convFile;
+	}
 
-	private boolean readDataFromTxt(MultipartFile file,  String city) 
+	private boolean readDataFromTxt(MultipartFile file,  String city)  
 	{
 		FileModel tmp = new FileModel();
 		try
 		{
-			InputStream inputStream = file.getInputStream();	
-			String content = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-			content = StringEscapeUtils.escapeJava(content);
+
+			java.io.FileInputStream fis = new java.io.FileInputStream(convert(file));
+			UniversalDetector detector = new UniversalDetector(null);
+			byte[] buf = new byte[1000000];
+			int nread;
+			String content = "";
+			
+			while ((nread = fis.read(buf)) > 0 && !detector.isDone()) 
+			  detector.handleData(buf, 0, nread);
+			detector.dataEnd();
+			String encoding = detector.getDetectedCharset();
+			InputStream inputStream = file.getInputStream();
+			
+			if (encoding == "UTF-16BE")
+				  content = IOUtils.toString(inputStream, StandardCharsets.UTF_16BE);
+			else if (encoding == "UTF-16LE")
+				  content = IOUtils.toString(inputStream, StandardCharsets.UTF_16LE);
+			else 
+				  content = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+			fis.close();
+			detector.reset();
 			
 		    if(content.length() > 0)
 		    {
 		    	tmp.setContent(content);
 		    	tmp.setCity(city);
+		    	tmp.setfileName(file.getOriginalFilename());
+		    	tmp.setfileType(file.getContentType());
+		    	tmp.setData(file.getBytes());
 		    	repository.save(tmp);
 		    }
 		     return true;
 		}
 		catch(Exception e) {return false;}
 	}
+	
+    public FileModel getFile(Long fileId) 
+    {
+        return repository.findById(fileId)
+                .orElseThrow(() -> new MyFileNotFoundException("File not found with id " + fileId));
+    }
+
 }

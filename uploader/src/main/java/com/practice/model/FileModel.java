@@ -4,9 +4,11 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.hibernate.annotations.Type;
 import org.springframework.web.multipart.MultipartFile;
 
 @Entity
@@ -17,8 +19,15 @@ public class FileModel
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    
+    
     private String city;
     private String content;
+    private String filename;
+    private String filetype;
+
+    @Type(type="org.hibernate.type.BinaryType") 
+    private byte[] data;
     
     @Transient
     private MultipartFile[] files;
@@ -28,11 +37,14 @@ public class FileModel
 
 	public FileModel() {}
 
-    public FileModel(Long id, String city, String content) 
+    public FileModel(Long id, String city, String content)//, String fileName, String fileType, byte[] data) 
     {
         this.id = id;
         this.city = city;
         this.content = content;
+        //this.fileName = fileName;
+        //this.fileType = fileType;
+        //this.data = data;
     }
     
     public MultipartFile[] getFiles() {return files;}
@@ -54,4 +66,16 @@ public class FileModel
     public String getContent() {return content;}
 
     public void setContent(String content) {this.content = content;}
+    
+    public byte[] getData() {return data;}
+
+    public void setData(byte[] data) {this.data = data;}
+    
+    public String getfileName() {return filename;}
+
+    public void setfileName(String filename) {this.filename = filename;}
+    
+    public String getfileType() {return filetype;}
+
+    public void setfileType(String fileType) {this.filetype = fileType;}
 }
