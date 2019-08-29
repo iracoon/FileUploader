@@ -7,5 +7,4 @@ public interface IFileService
 {
     List<FileModel> findAll();
 	boolean saveDataFromUploadFile(MultipartFile file, String city);
-	FileModel getFile(Long fileId);
 }

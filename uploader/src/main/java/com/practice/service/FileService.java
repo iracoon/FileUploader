@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import org.springframework.util.StringUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.exception.MyFileNotFoundException;
 import com.practice.model.FileModel;
 import com.practice.repository.FileRepository;
 
@@ -130,11 +128,4 @@ public class FileService implements IFileService
 		}
 		catch(Exception e) {return false;}
 	}
-	
-    public FileModel getFile(Long fileId) 
-    {
-        return repository.findById(fileId)
-                .orElseThrow(() -> new MyFileNotFoundException("File not found with id " + fileId));
-    }
-
 }
